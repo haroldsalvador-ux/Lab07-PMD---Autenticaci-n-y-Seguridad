@@ -1,38 +1,44 @@
 <%- include('partials/head') %>
 <script>Auth.guard('guest');</script>
-<div class="container">
-    <div class="card auth-card">
-        <div class="card-content">
-            <span class="card-title center-align"><i class="material-icons medium indigo-text">account_circle</i><br>Iniciar sesión</span>
+<div class="auth">
+    <%- include('partials/brand') %>
+    <main class="auth-panel">
+        <div class="auth-box">
+            <h2>Iniciar sesión</h2>
+            <p class="sub">Ingresa tus credenciales para acceder al portal.</p>
+            <div id="error" class="alert"><i class="material-icons">error_outline</i><span></span></div>
             <form id="signInForm" novalidate>
-                <div class="input-field">
-                    <i class="material-icons prefix">email</i>
-                    <input id="email" type="email" required>
-                    <label for="email">Email</label>
+                <div class="field">
+                    <label for="email">Correo electrónico</label>
+                    <div class="control"><i class="material-icons">mail_outline</i>
+                        <input id="email" class="input browser-default" type="email" placeholder="nombre@empresa.com" autocomplete="username" required></div>
                 </div>
-                <div class="input-field">
-                    <i class="material-icons prefix">vpn_key</i>
-                    <input id="password" type="password" required>
-                    <label for="password">Password</label>
+                <div class="field">
+                    <label for="password">Contraseña</label>
+                    <div class="control"><i class="material-icons">lock_outline</i>
+                        <input id="password" class="input browser-default" type="password" placeholder="••••••••" autocomplete="current-password" required></div>
                 </div>
-                <p id="error" class="red-text center-align"></p>
-                <button class="btn-large waves-effect indigo darken-2" style="width:100%" type="submit">Ingresar</button>
+                <button class="btn-large waves-effect waves-light" style="width:100%;margin-top:8px" type="submit">Ingresar</button>
             </form>
-            <p class="center-align" style="margin-top:20px">¿No tienes cuenta? <a href="/signUp">Regístrate</a></p>
+            <p class="switch">¿No tienes una cuenta? <a href="/signUp">Crear cuenta</a></p>
         </div>
-    </div>
+    </main>
 </div>
 <script>
     const params = new URLSearchParams(location.search);
+    const showError = msg => {
+        const el = document.getElementById('error');
+        el.querySelector('span').textContent = msg;
+        el.classList.toggle('show', !!msg);
+    };
     document.addEventListener('DOMContentLoaded', () => {
-        if (params.get('registered')) M.toast({ html: 'Registro exitoso, ahora inicia sesión', classes: 'green' });
-        if (params.get('reason') === 'expired') M.toast({ html: 'Tu sesión expiró, vuelve a iniciar sesión', classes: 'orange darken-2' });
+        if (params.get('registered')) toast('Cuenta creada correctamente. Ya puedes iniciar sesión.');
+        if (params.get('reason') === 'expired') toast('Tu sesión expiró. Vuelve a iniciar sesión.', 'warn');
     });
 
     document.getElementById('signInForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const error = document.getElementById('error');
-        error.textContent = '';
+        showError('');
         try {
             const { token } = await Auth.api('/api/auth/signIn', {
                 method: 'POST',
@@ -44,7 +50,7 @@
             Auth.setToken(token);
             window.location.replace(Auth.homePath());
         } catch (err) {
-            error.textContent = err.message;
+            showError(err.message);
         }
     });
 </script>

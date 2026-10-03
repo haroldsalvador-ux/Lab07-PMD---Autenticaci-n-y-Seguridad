@@ -1,0 +1,33 @@
+<%- include('head') %>
+<div class="app">
+    <aside class="sidebar">
+        <a href="/" class="logo"><span class="mark"><i class="material-icons">shield</i></span>Portal Corporativo</a>
+        <div class="nav-label">General</div>
+        <ul class="side-nav-list">
+            <li><a href="/dashboard" data-nav="dashboard"><i class="material-icons">space_dashboard</i>Dashboard</a></li>
+            <li><a href="/profile" data-nav="profile"><i class="material-icons">manage_accounts</i>Mi cuenta</a></li>
+        </ul>
+        <div data-show="admin">
+            <div class="nav-label">Administración</div>
+            <ul class="side-nav-list">
+                <li><a href="/admin" data-nav="admin"><i class="material-icons">groups</i>Usuarios</a></li>
+            </ul>
+        </div>
+        <div class="bottom">
+            <ul class="side-nav-list">
+                <li><a href="#" data-action="logout"><i class="material-icons">logout</i>Cerrar sesión</a></li>
+            </ul>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div class="crumbs">
+                <button class="menu-btn" data-action="menu" aria-label="Menú"><i class="material-icons">menu</i></button>
+                Portal <i class="material-icons">chevron_right</i> <b><%= title %></b>
+            </div>
+            <div class="user-chip">
+                <div class="who"><b id="tbName">&nbsp;</b><span id="tbRole">&nbsp;</span></div>
+                <img id="tbAvatar" alt="">
+            </div>
+        </header>
+        <section class="content">

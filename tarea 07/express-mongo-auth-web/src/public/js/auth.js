@@ -62,6 +62,12 @@ const Auth = {
         setTimeout(() => this.logout('expired'), ms);
     },
 
+    // Datos del usuario logueado (una sola petición compartida por la página)
+    me() {
+        if (!this._me) this._me = this.api('/api/users/me');
+        return this._me;
+    },
+
     // fetch con el token; si el servidor responde 401 se cierra la sesión
     async api(url, options = {}) {
         const headers = { 'Content-Type': 'application/json', ...(options.headers || {}) };
@@ -89,7 +95,7 @@ const Fmt = {
     avatar(u) {
         if (u.url_profile) return u.url_profile;
         const initials = `${u.name?.[0] ?? ''}${u.lastName?.[0] ?? ''}`.toUpperCase();
-        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="#3949ab"/><text x="50%" y="50%" dy=".35em" text-anchor="middle" font-family="Arial" font-size="38" fill="#fff">${initials}</text></svg>`;
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="#1f4fd8"/><text x="50%" y="50%" dy=".35em" text-anchor="middle" font-family="Inter,Arial" font-weight="600" font-size="36" fill="#fff">${initials}</text></svg>`;
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     },
     esc(s) {
@@ -97,16 +103,32 @@ const Fmt = {
     }
 };
 
-// Navbar según el rol del usuario logueado
+// Navegación según el rol del usuario logueado
 document.addEventListener('DOMContentLoaded', () => {
     const payload = Auth.getPayload();
     const logged = payload && !Auth.isExpired(payload);
-    document.querySelectorAll('[data-show="auth"]').forEach(el => el.style.display = logged ? '' : 'none');
-    document.querySelectorAll('[data-show="guest"]').forEach(el => el.style.display = logged ? 'none' : '');
     document.querySelectorAll('[data-show="admin"]').forEach(el => el.style.display = logged && Auth.isAdmin() ? '' : 'none');
     document.querySelectorAll('[data-action="logout"]').forEach(el => el.addEventListener('click', e => {
         e.preventDefault();
         Auth.logout();
     }));
+    document.querySelectorAll('[data-action="menu"]').forEach(el => el.addEventListener('click', () => document.body.classList.toggle('nav-open')));
+
+    // Marca la opción activa del menú lateral
+    const section = location.pathname.split('/')[1] || 'dashboard';
+    document.querySelector(`[data-nav="${section}"]`)?.classList.add('active');
+
+    // Usuario en la barra superior
+    if (document.getElementById('tbName') && logged) {
+        Auth.me().then(u => {
+            document.getElementById('tbName').textContent = `${u.name} ${u.lastName}`;
+            document.getElementById('tbRole').textContent = u.roles.includes('admin') ? 'Administrador' : 'Usuario';
+            document.getElementById('tbAvatar').src = Fmt.avatar(u);
+        }).catch(() => {});
+    }
     M.AutoInit();
 });
+
+function toast(html, type = 'ok') {
+    M.toast({ html, classes: type, displayLength: 3500 });
+}

@@ -1,8 +1,14 @@
 <%- include('partials/head') %>
-<div class="container center-align">
-    <p class="error-code red-text text-darken-2">403</p>
-    <h4>Acceso denegado</h4>
-    <p class="grey-text text-darken-1">No tienes permisos suficientes para acceder a esta página.</p>
-    <a href="/dashboard" class="btn indigo darken-2" style="margin-top:20px"><i class="material-icons left">home</i>Ir a mi dashboard</a>
+<div class="error-page">
+    <div class="error-box">
+        <div class="ico-wrap tone-red"><i class="material-icons">gpp_bad</i></div>
+        <div class="code">ERROR 403</div>
+        <h1>Acceso denegado</h1>
+        <p>No tienes los permisos necesarios para acceder a esta sección. Si crees que se trata de un error, contacta al administrador del sistema.</p>
+        <div class="actions">
+            <a href="javascript:history.back()" class="btn btn-outline waves-effect"><i class="material-icons left">arrow_back</i>Regresar</a>
+            <a href="/dashboard" class="btn waves-effect waves-light"><i class="material-icons left">space_dashboard</i>Ir a mi dashboard</a>
+        </div>
+    </div>
 </div>
 <%- include('partials/foot') %>

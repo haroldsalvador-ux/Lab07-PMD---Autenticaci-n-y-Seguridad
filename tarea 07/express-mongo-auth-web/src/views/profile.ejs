@@ -1,74 +1,75 @@
-<%- include('partials/head') %>
+<%- include('partials/app-start') %>
 <script>Auth.guard('auth');</script>
-<div class="container">
-    <h4>Mi cuenta</h4>
-    <div class="card"><div class="card-content">
-        <form id="profileForm" novalidate>
-            <div class="row">
-                <div class="input-field col s12 m6">
-                    <input id="email" type="email" disabled>
-                    <label for="email" class="active">Email (no editable)</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="roles" type="text" disabled>
-                    <label for="roles" class="active">Roles</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="name" type="text">
-                    <label for="name" class="active">Nombre</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="lastName" type="text">
-                    <label for="lastName" class="active">Apellido</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="phoneNumber" type="tel">
-                    <label for="phoneNumber" class="active">Teléfono</label>
-                </div>
-                <div class="input-field col s12 m4">
-                    <input id="birthdate" type="date">
-                    <label for="birthdate" class="active">Fecha de nacimiento</label>
-                </div>
-                <div class="input-field col s12 m2">
-                    <input id="age" type="text" disabled>
-                    <label for="age" class="active">Edad</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="address" type="text">
-                    <label for="address" class="active">Dirección</label>
-                </div>
-                <div class="input-field col s12 m6">
-                    <input id="url_profile" type="url">
-                    <label for="url_profile" class="active">URL foto de perfil</label>
-                </div>
+<div class="page-head">
+    <div><h1>Mi cuenta</h1><p>Consulta y actualiza tu información personal.</p></div>
+</div>
+<div class="layout-2">
+    <div class="panel profile-card">
+        <img id="avatar" alt="">
+        <h3 id="fullName">&nbsp;</h3>
+        <div class="mail" id="pEmail"></div>
+        <div id="pRoles"></div>
+        <div class="meta">
+            <div><span>Edad</span><b id="pAge">—</b></div>
+            <div><span>Registrado</span><b id="pCreated">—</b></div>
+            <div><span>Estado</span><span class="status-dot">Activo</span></div>
+        </div>
+    </div>
+    <form id="profileForm" class="panel" novalidate>
+        <div class="form-section">
+            <h4>Información personal</h4>
+            <p>Tu nombre y fecha de nacimiento.</p>
+            <div class="grid-2">
+                <div class="field"><label for="name">Nombre</label><input id="name" class="input browser-default" type="text"></div>
+                <div class="field"><label for="lastName">Apellido</label><input id="lastName" class="input browser-default" type="text"></div>
+                <div class="field"><label for="birthdate">Fecha de nacimiento</label><input id="birthdate" class="input browser-default" type="date"></div>
+                <div class="field"><label for="url_profile">URL foto de perfil</label><input id="url_profile" class="input browser-default" type="url" placeholder="https://..."></div>
             </div>
-            <button class="btn waves-effect indigo darken-2" type="submit"><i class="material-icons left">save</i>Guardar cambios</button>
-        </form>
-    </div></div>
+        </div>
+        <div class="form-section">
+            <h4>Contacto</h4>
+            <p>Medios para comunicarnos contigo.</p>
+            <div class="grid-2">
+                <div class="field"><label for="email">Correo electrónico</label><input id="email" class="input browser-default" type="email" disabled></div>
+                <div class="field"><label for="phoneNumber">Teléfono</label><input id="phoneNumber" class="input browser-default" type="tel"></div>
+            </div>
+            <div class="field"><label for="address">Dirección</label><input id="address" class="input browser-default" type="text"></div>
+        </div>
+        <div class="form-actions">
+            <a href="/dashboard" class="btn btn-outline waves-effect">Cancelar</a>
+            <button class="btn waves-effect waves-light" type="submit"><i class="material-icons left">save</i>Guardar cambios</button>
+        </div>
+    </form>
 </div>
 <script>
     const FIELDS = ['name', 'lastName', 'phoneNumber', 'birthdate', 'address', 'url_profile'];
     const $ = id => document.getElementById(id);
 
     function fill(u) {
+        $('avatar').src = Fmt.avatar(u);
+        $('fullName').textContent = `${u.name} ${u.lastName}`;
+        $('pEmail').textContent = u.email;
+        $('pRoles').innerHTML = u.roles.map(r => `<span class="badge-role ${r}">${r}</span>`).join('');
+        $('pAge').textContent = u.age != null ? `${u.age} años` : '—';
+        $('pCreated').textContent = Fmt.date(u.createdAt);
         $('email').value = u.email;
-        $('roles').value = u.roles.join(', ');
-        $('age').value = u.age != null ? `${u.age} años` : '';
         FIELDS.forEach(f => $(f).value = f === 'birthdate' ? (u.birthdate || '').slice(0, 10) : (u[f] ?? ''));
-        M.updateTextFields();
     }
 
-    (async () => fill(await Auth.api('/api/users/me')))();
+    (async () => fill(await Auth.me()))();
 
     $('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const data = Object.fromEntries(FIELDS.map(f => [f, $(f).value.trim()]));
         try {
-            fill(await Auth.api('/api/users/me', { method: 'PUT', body: JSON.stringify(data) }));
-            M.toast({ html: 'Datos actualizados', classes: 'green' });
+            const u = await Auth.api('/api/users/me', { method: 'PUT', body: JSON.stringify(data) });
+            fill(u);
+            $('tbName').textContent = `${u.name} ${u.lastName}`;
+            $('tbAvatar').src = Fmt.avatar(u);
+            toast('Los cambios se guardaron correctamente');
         } catch (err) {
-            M.toast({ html: err.message, classes: 'red' });
+            toast(err.message, 'err');
         }
     });
 </script>
-<%- include('partials/foot') %>
+<%- include('partials/app-end') %>

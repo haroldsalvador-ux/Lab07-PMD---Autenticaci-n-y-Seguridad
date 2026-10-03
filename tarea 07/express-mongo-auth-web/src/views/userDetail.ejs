@@ -1,35 +1,42 @@
-<%- include('partials/head') %>
+<%- include('partials/app-start') %>
 <script>Auth.guard('admin');</script>
-<div class="container">
-    <a href="/admin" class="btn-flat"><i class="material-icons left">arrow_back</i>Volver</a>
-    <div class="row" style="margin-top:16px">
-        <div class="col s12 m4">
-            <div class="card center-align"><div class="card-content">
-                <img id="avatar" class="avatar-big" alt="">
-                <h5 id="fullName"></h5>
-                <p id="roles"></p>
-            </div></div>
+<div class="page-head">
+    <div><h1>Detalle de usuario</h1><p>Información registrada del usuario seleccionado.</p></div>
+    <a href="/admin" class="btn btn-outline waves-effect"><i class="material-icons left">arrow_back</i>Volver a usuarios</a>
+</div>
+<div class="layout-2">
+    <div class="panel profile-card">
+        <img id="avatar" alt="">
+        <h3 id="fullName">&nbsp;</h3>
+        <div class="mail" id="pEmail"></div>
+        <div id="pRoles"></div>
+        <div class="meta">
+            <div><span>Edad</span><b id="pAge">—</b></div>
+            <div><span>Registrado</span><b id="pCreated">—</b></div>
+            <div><span>Estado</span><span class="status-dot">Activo</span></div>
         </div>
-        <div class="col s12 m8">
-            <div class="card"><div class="card-content">
-                <span class="card-title">Información del usuario</span>
-                <ul class="data-list" id="data"></ul>
-            </div></div>
-        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-head"><div><h3>Información del usuario</h3><p id="pId"></p></div></div>
+        <dl class="dl" id="data"></dl>
     </div>
 </div>
 <script>
     (async () => {
         const u = await Auth.api('/api/users/<%= userId %>');
-        document.getElementById('fullName').textContent = `${u.name} ${u.lastName}`;
         document.getElementById('avatar').src = Fmt.avatar(u);
-        document.getElementById('roles').innerHTML = u.roles.map(r => `<span class="chip">${r}</span>`).join('');
+        document.getElementById('fullName').textContent = `${u.name} ${u.lastName}`;
+        document.getElementById('pEmail').textContent = u.email;
+        document.getElementById('pRoles').innerHTML = u.roles.map(r => `<span class="badge-role ${r}">${r}</span>`).join('');
+        document.getElementById('pAge').textContent = `${u.age} años`;
+        document.getElementById('pCreated').textContent = Fmt.date(u.createdAt);
+        document.getElementById('pId').textContent = `ID: ${u.id}`;
         const rows = [
-            ['ID', u.id], ['Email', u.email], ['Teléfono', u.phoneNumber], ['Fecha de nacimiento', Fmt.date(u.birthdate)],
-            ['Edad', `${u.age} años`], ['Dirección', u.address], ['URL perfil', u.url_profile],
-            ['Fecha de registro', Fmt.dateTime(u.createdAt)], ['Última actualización', Fmt.dateTime(u.updatedAt)]
+            ['Nombre', u.name], ['Apellido', u.lastName], ['Correo electrónico', u.email], ['Teléfono', u.phoneNumber],
+            ['Fecha de nacimiento', Fmt.date(u.birthdate)], ['Dirección', u.address], ['URL foto de perfil', u.url_profile],
+            ['Roles', u.roles.join(', ')], ['Fecha de registro', Fmt.dateTime(u.createdAt)], ['Última actualización', Fmt.dateTime(u.updatedAt)]
         ];
-        document.getElementById('data').innerHTML = rows.map(([k, v]) => `<li><span class="label">${k}</span><span>${Fmt.esc(v)}</span></li>`).join('');
-    })().catch(() => {});
+        document.getElementById('data').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${Fmt.esc(v || '—')}</dd></div>`).join('');
+    })().catch(err => toast(err.message, 'err'));
 </script>
-<%- include('partials/foot') %>
+<%- include('partials/app-end') %>

@@ -1,39 +1,41 @@
-<%- include('partials/head') %>
+<%- include('partials/app-start') %>
 <script>Auth.guard('auth');</script>
-<div class="container">
-    <h4 id="welcome">Bienvenido</h4>
-    <p class="grey-text text-darken-1">Aquí están tus datos:</p>
-    <div class="row">
-        <div class="col s12 m4">
-            <div class="card center-align">
-                <div class="card-content">
-                    <img id="avatar" class="avatar-big" alt="">
-                    <h5 id="fullName"></h5>
-                    <p id="roles"></p>
-                </div>
-                <div class="card-action"><a href="/profile">Editar mi cuenta</a></div>
-            </div>
-        </div>
-        <div class="col s12 m8">
-            <div class="card"><div class="card-content">
-                <span class="card-title">Mis datos</span>
-                <ul class="data-list" id="data"></ul>
-            </div></div>
-        </div>
+<div class="welcome">
+    <img id="avatar" alt="">
+    <div>
+        <h2 id="welcome">Bienvenido</h2>
+        <p>Aquí están tus datos. Mantén tu información actualizada desde <b>Mi cuenta</b>.</p>
     </div>
+</div>
+<div class="stats three">
+    <div class="panel stat"><span class="ico tone-blue"><i class="material-icons">badge</i></span>
+        <div><div class="label">Rol asignado</div><div class="value sm" id="sRole">—</div></div></div>
+    <div class="panel stat"><span class="ico tone-green"><i class="material-icons">cake</i></span>
+        <div><div class="label">Edad</div><div class="value sm" id="sAge">—</div></div></div>
+    <div class="panel stat"><span class="ico tone-amber"><i class="material-icons">event_available</i></span>
+        <div><div class="label">Miembro desde</div><div class="value sm" id="sSince">—</div></div></div>
+</div>
+<div class="panel">
+    <div class="panel-head">
+        <div><h3>Información personal</h3><p>Datos registrados en tu cuenta</p></div>
+        <a href="/profile" class="btn btn-outline waves-effect"><i class="material-icons left">edit</i>Editar</a>
+    </div>
+    <dl class="dl" id="data"></dl>
 </div>
 <script>
     (async () => {
-        const u = await Auth.api('/api/users/me');
+        const u = await Auth.me();
         document.getElementById('welcome').textContent = `Bienvenido, ${u.name}`;
-        document.getElementById('fullName').textContent = `${u.name} ${u.lastName}`;
         document.getElementById('avatar').src = Fmt.avatar(u);
-        document.getElementById('roles').innerHTML = u.roles.map(r => `<span class="new badge ${r === 'admin' ? 'red' : 'indigo'}" data-badge-caption="${r}" style="float:none"></span>`).join(' ');
+        document.getElementById('sRole').textContent = u.roles.includes('admin') ? 'Administrador' : 'Usuario';
+        document.getElementById('sAge').textContent = `${u.age} años`;
+        document.getElementById('sSince').textContent = Fmt.date(u.createdAt);
         const rows = [
-            ['Email', u.email], ['Teléfono', u.phoneNumber], ['Fecha de nacimiento', Fmt.date(u.birthdate)],
-            ['Edad', `${u.age} años`], ['Dirección', u.address], ['Miembro desde', Fmt.dateTime(u.createdAt)]
+            ['Nombre completo', `${u.name} ${u.lastName}`], ['Correo electrónico', u.email],
+            ['Teléfono', u.phoneNumber], ['Fecha de nacimiento', Fmt.date(u.birthdate)],
+            ['Dirección', u.address], ['Última actualización', Fmt.dateTime(u.updatedAt)]
         ];
-        document.getElementById('data').innerHTML = rows.map(([k, v]) => `<li><span class="label">${k}</span><span>${Fmt.esc(v)}</span></li>`).join('');
+        document.getElementById('data').innerHTML = rows.map(([k, v]) => `<div><dt>${k}</dt><dd>${Fmt.esc(v || '—')}</dd></div>`).join('');
     })();
 </script>
-<%- include('partials/foot') %>
+<%- include('partials/app-end') %>
