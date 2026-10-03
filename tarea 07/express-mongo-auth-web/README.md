@@ -2,19 +2,15 @@
 
 ## Ejecutar
 1. MongoDB corriendo en `localhost:27017` (con Docker: `docker start mongo-auth`).
-2. `npm i`
-3. `npm run dev` y abrir http://localhost:3000
+2. Crear el archivo `.env` (no se incluye en el repositorio):
+   - `PORT`, `MONGODB_URI`, `JWT_SECRET`, `JWT_EXPIRES_IN`, `BCRYPT_SALT_ROUNDS`
+   - `ADMIN_EMAIL` y `ADMIN_PASSWORD`: credenciales del administrador que crea `seedUsers.js`
+     (si el password tiene `#`, escribirlo entre comillas).
+3. `npm i`
+4. `npm run dev` y abrir http://localhost:3000
 
-Al iniciar se crean los roles (`seedRoles.js`) y el usuario administrador (`seedUsers.js`)
-con las credenciales `ADMIN_EMAIL` / `ADMIN_PASSWORD` del `.env`.
-
-## Cuentas de prueba
-| Rol   | Email                          | Password      |
-|-------|--------------------------------|---------------|
-| admin | admin@tecsup.edu.pe            | ver `.env`    |
-| user  | harold.salvador@tecsup.edu.pe  | Harold#2026   |
-| user  | maria.quispe@tecsup.edu.pe     | Maria#2026    |
-| user  | carlos.mendoza@tecsup.edu.pe   | Carlos#2026   |
+Al iniciar se crean los roles (`seedRoles.js`) y el usuario administrador (`seedUsers.js`).
+Los usuarios con rol `user` se registran desde `/signUp`.
 
 ## Páginas
 | Ruta | Descripción | Acceso |
