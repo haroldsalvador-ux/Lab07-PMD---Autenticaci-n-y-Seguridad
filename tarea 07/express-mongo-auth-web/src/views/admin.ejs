@@ -1,0 +1,31 @@
+<%- include('partials/head') %>
+<script>Auth.guard('admin');</script>
+<div class="container" style="width:90%">
+    <h4>Dashboard de administrador</h4>
+    <p class="grey-text text-darken-1">Usuarios registrados: <b id="count">0</b></p>
+    <div class="card"><div class="card-content">
+        <table class="striped responsive-table">
+            <thead>
+                <tr><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Edad</th><th>Roles</th><th>Fecha de registro</th><th></th></tr>
+            </thead>
+            <tbody id="users"></tbody>
+        </table>
+    </div></div>
+</div>
+<script>
+    (async () => {
+        const users = await Auth.api('/api/users');
+        document.getElementById('count').textContent = users.length;
+        document.getElementById('users').innerHTML = users.map(u => `
+            <tr>
+                <td>${Fmt.esc(u.name)} ${Fmt.esc(u.lastName)}</td>
+                <td>${Fmt.esc(u.email)}</td>
+                <td>${Fmt.esc(u.phoneNumber)}</td>
+                <td>${u.age ?? '—'}</td>
+                <td>${u.roles.map(r => `<span class="chip ${r === 'admin' ? 'red lighten-4' : 'indigo lighten-5'}">${r}</span>`).join('')}</td>
+                <td>${Fmt.dateTime(u.createdAt)}</td>
+                <td><a class="btn-small indigo darken-1" href="/admin/users/${u.id}"><i class="material-icons left">visibility</i>Ver</a></td>
+            </tr>`).join('');
+    })();
+</script>
+<%- include('partials/foot') %>

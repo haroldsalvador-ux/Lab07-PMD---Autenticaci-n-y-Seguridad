@@ -1,0 +1,51 @@
+<%- include('partials/head') %>
+<script>Auth.guard('guest');</script>
+<div class="container">
+    <div class="card auth-card">
+        <div class="card-content">
+            <span class="card-title center-align"><i class="material-icons medium indigo-text">account_circle</i><br>Iniciar sesión</span>
+            <form id="signInForm" novalidate>
+                <div class="input-field">
+                    <i class="material-icons prefix">email</i>
+                    <input id="email" type="email" required>
+                    <label for="email">Email</label>
+                </div>
+                <div class="input-field">
+                    <i class="material-icons prefix">vpn_key</i>
+                    <input id="password" type="password" required>
+                    <label for="password">Password</label>
+                </div>
+                <p id="error" class="red-text center-align"></p>
+                <button class="btn-large waves-effect indigo darken-2" style="width:100%" type="submit">Ingresar</button>
+            </form>
+            <p class="center-align" style="margin-top:20px">¿No tienes cuenta? <a href="/signUp">Regístrate</a></p>
+        </div>
+    </div>
+</div>
+<script>
+    const params = new URLSearchParams(location.search);
+    document.addEventListener('DOMContentLoaded', () => {
+        if (params.get('registered')) M.toast({ html: 'Registro exitoso, ahora inicia sesión', classes: 'green' });
+        if (params.get('reason') === 'expired') M.toast({ html: 'Tu sesión expiró, vuelve a iniciar sesión', classes: 'orange darken-2' });
+    });
+
+    document.getElementById('signInForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const error = document.getElementById('error');
+        error.textContent = '';
+        try {
+            const { token } = await Auth.api('/api/auth/signIn', {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: document.getElementById('email').value.trim(),
+                    password: document.getElementById('password').value
+                })
+            });
+            Auth.setToken(token);
+            window.location.replace(Auth.homePath());
+        } catch (err) {
+            error.textContent = err.message;
+        }
+    });
+</script>
+<%- include('partials/foot') %>
